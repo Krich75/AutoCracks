@@ -4,8 +4,7 @@ import pandas as pd
 import itertools
 import enum
 import sys
-
-sys.setrecursionlimit(1000000)
+import os
 
 import scipy.interpolate
 
@@ -192,7 +191,7 @@ class DSU:
         else:
             self._merge(second_idx, first_idx)
     
-    def merge(self, child_idx, parent_idx):
+    def _merge(self, child_idx, parent_idx):
         self.roots[self.get_root(child_idx)] = self.get_root(parent_idx)
 
 
@@ -326,7 +325,7 @@ def rle_encode(data):
     return np.transpose([labels, lens])
 
 
-def rle_decode(data):
+def rle_decode(data, shape):
     labels = data.T[0]
     len = data.T[1]
     ends = np.cumsum(len)
@@ -334,12 +333,12 @@ def rle_decode(data):
     result = np.zeros(np.sum(len), dtype=np.uint16)
     for start, end, label in zip(starts, ends, labels):
         result[start:end] = label
-    return result.reshape((333, 480, 640))
+    return result.reshape(shape)
 
 
-if __name__ == '__main__':
-    crack_probability = np.load('../input/crack_probability.npy')
-    ground_truth_training = np.load('../input/ground_truth_fixed_training.npy')
+def get_labels(crack_probability, n_init_layers):
+    sys.setrecursionlimit(1000000)
+    np.random.seed(10)
     
     extracted_layers = joblib.Parallel(n_jobs=-1)(
         joblib.delayed(extract_segments)(crack_probability[i])
@@ -348,7 +347,7 @@ if __name__ == '__main__':
     
     helper_mask = extract_segments(
         skimage.morphology.opening(
-            np.mean(crack_probability[:50], axis=0) > 0
+            np.mean(crack_probability[:n_init_layers], axis=0) > 0
         ),
         0,
         joint_std=2,
@@ -368,6 +367,56 @@ if __name__ == '__main__':
             n_interpolation_options=3,
         )
         fixed_layers.append(layer_fixed)
-    fixed_layers = np.array(fixed_layers[1:])
-    encoded = rle_encode(fixed_layers)
-    np.savetxt('../submissions/2.csv', encoded, '%d', ',')
+    return np.array(fixed_layers[1:])
+
+
+def run():
+    import argparse
+    parser = argparse.ArgumentParser(
+        description='Script for crack segmentation',
+        epilog='Author: amorgun https://github.com/amorgun',
+    )
+    parser.add_argument(
+        '-s', '--shape',
+        dest='shape',
+        help='shape of the probability data in (z,y,x) order. Used only with .csv input files. Example: "333,480,640"'
+    )
+    parser.add_argument(
+        'probability_file',
+        help='location of the probability file input in .npy. format.'
+    )
+    parser.add_argument(
+        '-t',
+        default=50,
+        type=int,
+        dest='n_init_layers',
+        help='number of layers used for building the initial labels.'
+    )
+    parser.add_argument(
+        '-z',
+        default=None,
+        dest='output_npy',
+        help='location of the output in .npy format.'
+    )
+    parser.add_argument(
+        'output_file',
+        help='location of the output in .csv format.'
+    )
+    args = parser.parse_args()
+    if args.probability_file.endswith('.csv'):
+        input_shape = tuple(int(i) for i in args.shape.split(','))
+        crack_probability = rle_decode(
+            np.loadtxt(args.probability_file, int, delimiter=','),
+            input_shape,
+        )
+    else:
+        crack_probability = np.load(args.probability_file)
+    labels = get_labels(crack_probability, args.n_init_layers)
+    rle_encoded = rle_encode(labels)
+    np.savetxt(args.output_file,  rle_encoded, '%d', ',')
+    if args.output_npy:
+        np.save(args.output_npy, labels)
+
+
+if __name__ == '__main__':
+    run()
