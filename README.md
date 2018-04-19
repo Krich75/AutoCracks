@@ -1,4 +1,6 @@
 # AutoCracks
+My solution of AutoCracks Marathon Match.
+
 ## Information
 - [Competition page](https://community.topcoder.com/longcontest/?module=ViewProblemStatement&rd=17037&pm=14753)
 - [Final leaderboard](https://community.topcoder.com/longcontest/stats/?module=ViewOverview&rd=17037)
