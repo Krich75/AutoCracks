@@ -6,7 +6,7 @@
 
 ## Solution
 ### 1. Independent processing for each z-level.
-1) Extract skeleton using skimage.morphology.skeletonize function.
+1) Extract skeleton using `skimage.morphology.skeletonize function`.
 ![Initial image](/readme_images/initial.png)
 ![Blurred image](readme_images/initial_blured.png)
 ![Binarized blurred image](readme_images/initial_blured_binarized.png)
@@ -33,4 +33,4 @@ I will operate with two layers: the previous and the current one. I assume that 
     
 ### 3. Additional tricks.
 1) Described earlier procedure of merging layers is prone to the bad labeling of the first layer so I used averaged first 50 layers as the initial layer.
-2) skimage.morphology.skeletonize yields weird curves near joints so it’s better to ignore some area around joints for calculating crack direction vectors.
+2) `skimage.morphology.skeletonize` yields weird curves near joints so it’s better to ignore some area around joints for calculating crack direction vectors.
