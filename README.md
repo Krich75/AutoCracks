@@ -22,11 +22,10 @@
 ![Final result for the layer](readme_images/final_layer_result.png)
 
 ### 2. Merging results for all z-levels.
-After the previous step each layer has its own independent set of crack labels. I describe a procedure of merging labels for two layers and then we apply this procedure sequentially to all layers.
-
-Clearly background pixels are always labeled as 0 and their labels do not need to be merged.
-
-I will operate with two layers: the previous and the current one. I assume that the previous layer already has the final labels and we need to assign this labels to the current layer. We will process each labeled area from the current layer separately. I considered 3 possible options:
+After the previous step each layer has its own independent set of crack labels. I describe a procedure of merging labels for two layers and then we apply this procedure sequentially to all layers.  
+Clearly background pixels are always labeled as 0 and their labels do not need to be merged.  
+I will operate with two layers: the previous and the current one. I assume that the previous layer already has the final labels and we need to assign this labels to the current layer. We will process each labeled area from the current layer separately.  
+I considered 3 possible options:
 1) A high percentage (let’s say 90%) of points with the new label had the same label on the previous layer. In this case I mark all pixels with this label on the current layer by the label from the previous layer.
 2) Most of the points (let’s say 50%) in the area had some label at the previous layer but there is no clear majority. In this case I assigned labels to a pixel from the area as a label of the closest labeled pixel on the previous layer.
 3) Otherwise we need to create new unique clack label that was not used in the previous layer and assign this label to all pixels from the area. 
